@@ -1,15 +1,33 @@
-/* exported NotificationList */
+/* exported NotificationList */ 
 
-const {GObject, St, Clutter, Gio} = imports.gi;
-const Main = imports.ui.main;
-const Calendar = imports.ui.calendar;
-const MessageList = imports.ui.messageList;
-const MessageTray = imports.ui.messageTray;
-const PopupMenu = imports.ui.popupMenu;
-const Util = imports.misc.util;
+export { NotificationList };
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+// const {GObject, St, Clutter, Gio} = imports.gi;
+
+import GObject from 'gi://GObject';
+import St from 'gi://St';
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+
+
+// const Main = imports.ui.main;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
+// const Calendar = imports.ui.calendar;
+import * as Calendar from 'resource:///org/gnome/shell/ui/calendar.js';
+// const MessageList = imports.ui.messageList;
+import * as MessageList from 'resource:///org/gnome/shell/ui/messageList.js';
+// const MessageTray = imports.ui.messageTray;
+import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
+// const PopupMenu = imports.ui.popupMenu;
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+// const Util = imports.misc.util;
+import * as Util from 'resource:///org/gnome/shell/misc/util.js';
+
+// const Me = imports.misc.extensionUtils.getCurrentExtension();
+// const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+
+import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const NotificationSection = GObject.registerClass(
 class NotificationSection extends MessageList.MessageListSection {
@@ -94,6 +112,20 @@ class DoNotDisturbSwitch extends PopupMenu.Switch {
     }
 });
 
+const Placeholder = GObject.registerClass(
+class Placeholder extends St.BoxLayout {
+    _init() {
+        super._init({style_class: 'message-list-placeholder', vertical: true});
+        this._date = new Date();
+
+        this._icon = new St.Icon({icon_name: 'no-notifications-symbolic'});
+        this.add_child(this._icon);
+
+        this._label = new St.Label({text: _('No Notifications')});
+        this.add_child(this._label);
+    }
+});
+
 var NotificationList = GObject.registerClass(
 class NotificationList extends St.BoxLayout {
     _init(dnd) {
@@ -104,7 +136,7 @@ class NotificationList extends St.BoxLayout {
             style_class: 'notification-list',
         });
 
-        this._placeholder = new Calendar.Placeholder();
+        this._placeholder = new Placeholder();
         this._placeholder.x_align = Clutter.ActorAlign.CENTER;
         this._placeholder.add_style_class_name('notifications-placeholder');
         this.add_child(this._placeholder);

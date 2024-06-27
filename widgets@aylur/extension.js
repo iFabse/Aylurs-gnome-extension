@@ -16,10 +16,35 @@
  */
 /* exported init */
 'use strict';
+import * as backgroundClock from './extensions/backgroundClock.js';
+import * as batteryBar from './extensions/batteryBar.js';
+import * as dashBoard from './extensions/dashBoard.js';
+import * as dateMenuTweaks from './extensions/dateMenuTweaks.js';
+import * as dynamicPanel from './extensions/dynamicPanel.js';
+import * as mediaPlayer from './extensions/mediaPlayer.js';
+import * as notificationIndicator from './extensions/notificationIndicator.js';
+import * as powerMenu from './extensions/powerMenu.js';
+import * as quickSettingsTweaks from './extensions/quickSettingsTweaks.js';
+import * as stylishOSD from './extensions/stylishOSD.js';
+import * as windowHeaderbar from './extensions/windowHeaderbar.js';
+import * as workspaceIndicator from './extensions/workspaceIndicator.js';
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
+const ExtensionImports = [
+    backgroundClock,
+    batteryBar,
+    dashBoard,
+    dateMenuTweaks,
+    mediaPlayer,
+    notificationIndicator,
+    powerMenu,
+    workspaceIndicator,
+    dynamicPanel,
+    windowHeaderbar,
+    // quickSettingsTweaks,
+    stylishOSD
+];
 const Extensions = {
     backgroundClock: 'background-clock',
     batteryBar: 'battery-bar',
@@ -31,54 +56,56 @@ const Extensions = {
     workspaceIndicator: 'workspace-indicator',
     dynamicPanel: 'dynamic-panel',
     windowHeaderbar: 'window-headerbar',
-    quickSettingsTweaks: 'quick-settings-tweaks',
+    // quickSettingsTweaks: 'quick-settings-tweaks',
     stylishOSD: 'stylish-osd',
 };
 
-class Extension {
+export default class MyExtension extends Extension {
+    constructor(metadata) {
+        super(metadata);
+        this._instances = {};
+    }
+
     enable() {
-        const settings = ExtensionUtils.getSettings();
+        const settings = this.getSettings();
 
-        for (const extension in Extensions) {
-            if (Object.hasOwnProperty.call(Extensions, extension)) {
-                const settings_key = Extensions[extension];
+        for (const [index, extensionName] of Object.keys(Extensions).entries()) {
+            const settings_key = Extensions[extensionName];
 
-                this[extension] = new Me.imports.extensions[extension].Extension(settings);
-                if (settings.get_boolean(settings_key))
-                    this._toggleExtension(this[extension]);
+            this._instances[extensionName] = new ExtensionImports[index].MyExtension(settings);
 
-                settings.connect(`changed::${settings_key}`, () => {
-                    this._toggleExtension(this[extension]);
-                });
+            if (settings.get_boolean(settings_key)) {
+                this._toggleExtension(this._instances[extensionName]);
             }
+
+            settings.connect(`changed::${settings_key}`, () => {
+                this._toggleExtension(this._instances[extensionName]);
+            });
         }
     }
 
     disable() {
-        for (const extension in Extensions) {
-            if (Object.hasOwnProperty.call(Extensions, extension)) {
-                if (this[extension].enabled) {
-                    this[extension].disable();
-                    this[extension].enabled = false;
-                }
-
-                this[extension] = null;
+        for (const instance of Object.values(this._instances)) {
+            if (instance.enabled) {
+                instance.disable();
+                instance.enabled = false;
             }
         }
+        this._instances = {};
     }
 
-    _toggleExtension(extension) {
-        if (!extension.enabled) {
-            extension.enable();
-            extension.enabled = true;
+    _toggleExtension(instance) {
+        if (!instance.enabled) {
+            instance.enable();
+            instance.enabled = true;
         } else {
-            extension.disable();
-            extension.enabled = false;
+            instance.disable();
+            instance.enabled = false;
         }
     }
 }
 
-function init() {
-    ExtensionUtils.initTranslations(Me.metadata.uuid);
-    return new Extension();
+function init(meta) {
+    return new MyExtension(meta);
 }
+

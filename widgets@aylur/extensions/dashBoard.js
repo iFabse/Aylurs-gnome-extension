@@ -1,17 +1,36 @@
 /* exported Extension */
+export { MyExtension };
 
-const {GObject, St, Gio, Clutter, Meta, Shell} = imports.gi;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Main = imports.ui.main;
-const PanelMenu = imports.ui.panelMenu;
-const Widgets = Me.imports.shared.dashWidgets;
-const ConfigParser = Me.imports.shared.dashConfigParser;
-const {PanelButton} = Me.imports.shared.panelButton;
+// const {GObject, St, Gio, Clutter, Meta, Shell} = imports.gi;
+import GObject from 'gi://GObject';
+import St from 'gi://St';
+import Gio from 'gi://Gio';
+import Clutter from 'gi://Clutter';
+import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
 
-const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+// const Main = imports.ui.main;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
+// const PanelMenu = imports.ui.panelMenu;
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+
+// const Widgets = Me.imports.shared.dashWidgets;
+// const ConfigParser = Me.imports.shared.dashConfigParser;
+import * as Widgets from '../shared/dashWidgets.js';
+import * as ConfigParser from '../shared/dashConfigParser.js';
+
+// const {PanelButton} = Me.imports.shared.panelButton;
+import {PanelButton} from '../shared/panelButton.js';
+import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
+
+
+// const Me = imports.misc.extensionUtils.getCurrentExtension();
+// const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const DashBoardModal = GObject.registerClass(
-class DashBoardModal extends imports.ui.modalDialog.ModalDialog {
+class DashBoardModal extends ModalDialog.ModalDialog {
     _init(settings) {
         super._init({
             destroyOnClose: false,
@@ -133,7 +152,7 @@ class DashBoardModal extends imports.ui.modalDialog.ModalDialog {
             const file = Gio.File.new_for_path(`${Me.path}/config/dashboard.json`);
             let [, contents, _etag] = file.load_contents(null);
             contents instanceof Uint8Array
-                ? contents = imports.byteArray.toString(contents)
+                ? contents = new TextDecoder().decode(contents)
                 : contents = contents.toString();
 
             ConfigParser.parseJson(JSON.parse(contents), this._settings);
@@ -230,7 +249,7 @@ class DashBoardPanelButton extends PanelMenu.Button {
     }
 });
 
-var Extension = class Extension {
+var MyExtension = class MyExtension {
     constructor(settings) {
         this._settings = settings;
         this._extension = new PanelButton({

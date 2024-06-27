@@ -1,11 +1,27 @@
 /* exported MediaBox */
+export {MediaBox, Media};
 
-const {GObject, St, Gio, Clutter, Shell, GLib} = imports.gi;
-const {Slider} = imports.ui.slider;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+// const {GObject, St, Gio, Clutter, Shell, GLib} = imports.gi;
+import GObject from 'gi://GObject';
+import St from 'gi://St';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import Shell from 'gi://Shell';
 
-const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+// const {Slider} = imports.ui.slider;
+import {Slider} from 'resource:///org/gnome/shell/ui/slider.js';
+
+// const ExtensionUtils = imports.misc.extensionUtils;
+// const Me = ExtensionUtils.getCurrentExtension();
+//
+// const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
+import {loadInterfaceXML} from 'resource:///org/gnome/shell/misc/fileUtils.js';
+
+const Me = () => {
+    return Extension.lookupByUUID("widgets@markocic");
+};
 
 const CACHE_PATH = `${GLib.get_user_cache_dir()}/aylur`;
 const MEDIA_CACHE = `${CACHE_PATH}/media/`;
@@ -46,7 +62,7 @@ const MprisIFace =
 
 const MprisPlayerProxy = Gio.DBusProxy.makeProxyWrapper(PlayerIFace);
 const MprisProxy = Gio.DBusProxy.makeProxyWrapper(MprisIFace);
-const DBusProxy = Gio.DBusProxy.makeProxyWrapper(imports.misc.fileUtils.loadInterfaceXML('org.freedesktop.DBus'));
+const DBusProxy = Gio.DBusProxy.makeProxyWrapper(loadInterfaceXML('org.freedesktop.DBus'));
 
 const blackListVolumeSlider = ['Spot'];
 
@@ -331,7 +347,7 @@ class PlayerWidget extends St.BoxLayout {
         `;
         const noCover = `
             border-radius: ${this.roundness}px;
-            background-image: url("file://${Me.path}/media/missing-cover-symbolic.svg");
+            background-image: url("file://${Me().metadata.path}/media/missing-cover-symbolic.svg");
         `;
 
         if (this.player.trackCoverUrl === '' || this.player.trackCoverUrl === '_') {

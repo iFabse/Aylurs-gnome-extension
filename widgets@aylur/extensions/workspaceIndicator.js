@@ -1,12 +1,27 @@
 /* exported Extension */
+export {MyExtension}
 
 // fork of https://github.com/fthx/workspaces-bar
-const {Clutter, Gio, GObject, Shell, St} = imports.gi;
-const Main = imports.ui.main;
-const PanelMenu = imports.ui.panelMenu;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+// const {Clutter, Gio, GObject, Shell, St} = imports.gi;
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
 
-const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+// const Main = imports.ui.main;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
+// const PanelMenu = imports.ui.panelMenu;
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+
+// const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Me = () => {
+    return Extension.lookupByUUID("widgets@markocic");
+};
+
+// const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 var WorkspacesIndicator = GObject.registerClass(
 class WorkspacesIndicator extends PanelMenu.Button {
@@ -79,8 +94,8 @@ class WorkspacesIndicator extends PanelMenu.Button {
                     y_align: Clutter.ActorAlign.CENTER,
                     style_class: 'system-status-icon',
                     gicon: active
-                        ? Gio.icon_new_for_string(`${Me.path}/media/workspace-active-symbolic.svg`)
-                        : Gio.icon_new_for_string(`${Me.path}/media/workspace-symbolic.svg`),
+                        ? Gio.icon_new_for_string(`${Me().metadata.path}/media/workspace-active-symbolic.svg`)
+                        : Gio.icon_new_for_string(`${Me().metadata.path}/media/workspace-symbolic.svg`),
                 }));
             }
 
@@ -96,7 +111,7 @@ class WorkspacesIndicator extends PanelMenu.Button {
     }
 });
 
-var Extension = class Extension {
+var MyExtension = class MyExtension {
     constructor(settings) {
         this._settings = settings;
         this.pos = [

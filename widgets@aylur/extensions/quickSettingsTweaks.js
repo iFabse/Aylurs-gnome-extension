@@ -1,22 +1,46 @@
 /* exported Extension */
+export {MyExtension};
 
-const {GObject, St, Clutter, GLib, Gio, GnomeDesktop, Shell, UPowerGlib: UPower} = imports.gi;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Main = imports.ui.main;
+// const {GObject, St, Clutter, GLib, Gio, GnomeDesktop, Shell, UPowerGlib: UPower} = imports.gi;
+import GObject from 'gi://GObject';
+import St from 'gi://St';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import GnomeDesktop from 'gi://GnomeDesktop';
+import Shell from 'gi://Shell';
+import UPower from 'gi://UPowerGlib';
+
+// const Me = imports.misc.extensionUtils.getCurrentExtension();
+// const Main = imports.ui.main;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
 const QS = Main.panel.statusArea.quickSettings;
-const {QuickSlider} = imports.ui.quickSettings;
-const SystemActions = imports.misc.systemActions;
-const Media = Me.imports.shared.media;
-const {NotificationList} = Me.imports.shared.notificationList;
-const SystemLevels = Me.imports.shared.systemLevels;
-const {VolumeMixer} = Me.imports.shared.volumeMixer;
-const {Avatar, UserName, Greetings} = Me.imports.shared.userWidget;
 
-const {loadInterfaceXML} = imports.misc.fileUtils;
+// const {QuickSlider} = imports.ui.quickSettings;
+import {QuickSlider} from 'resource:///org/gnome/shell/ui/quickSettings.js';
+
+// const SystemActions = imports.misc.systemActions;
+import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.js';
+// const Media = Me.imports.shared.media;
+import * as Media from '../shared/media.js';
+// const {NotificationList} = Me.imports.shared.notificationList;
+import { NotificationList } from '../shared/notificationList.js';
+// const SystemLevels = Me.imports.shared.systemLevels;
+import * as SystemLevels from '../shared/systemLevels.js';
+// const {VolumeMixer} = Me.imports.shared.volumeMixer;
+import { VolumeMixer } from '../shared/volumeMixer.js';
+// const {Avatar, UserName, Greetings} = Me.imports.shared.userWidget;
+import {Avatar, Greetings, UserName} from '../shared/userWidget.js';
+
+// const {loadInterfaceXML} = imports.misc.fileUtils;
+import {loadInterfaceXML} from 'resource:///org/gnome/shell/misc/fileUtils.js';
+
 const DisplayDeviceInterface = loadInterfaceXML('org.freedesktop.UPower.Device');
 const PowerManagerProxy = Gio.DBusProxy.makeProxyWrapper(DisplayDeviceInterface);
 
-const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+// const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const NIGHT_LIGHT_MAX = 4700;
 const NIGHT_LIGHT_MIN = 1400;
@@ -775,7 +799,7 @@ class QuickSettingsTweaks {
     }
 }
 
-var Extension = class Extension {
+var MyExtension = class MyExtension {
     constructor(settings) {
         this._settings = settings;
     }
@@ -807,9 +831,25 @@ var Extension = class Extension {
             this
         );
 
-        this.tweaks.reload();
+        if (Main.panel.statusArea.quickSettings._system)
+            this._modifySystemItem();
+        else
+            this._queueModifySystemItem();
+    }
 
+    _modifySystemItem() {
+        this.tweaks.reload();
         this.binding = Main.layoutManager.connect('monitors-changed', () => this.tweaks.reload());
+    }
+
+    _queueModifySystemItem() {
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            if (!Main.panel.statusArea.quickSettings._system)
+                return GLib.SOURCE_CONTINUE;
+
+            this._modifySystemItem();
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     disable() {

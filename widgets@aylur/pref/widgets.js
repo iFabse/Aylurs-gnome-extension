@@ -1,11 +1,28 @@
 /* exported SpinButtonRow EntryRow DropDownRow SwitchRow ColorRow
             ExpanderRow PositionRow FileChooserButton HotkeyDialog */
 
-const {Adw, Gio, Gtk, GObject, Gdk, GdkPixbuf} = imports.gi;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+export {
+    SpinButtonRow, EntryRow, DropDownRow,
+    SwitchRow, ColorRow, ExpanderRow,
+    PositionRow, FileChooserButton, HotkeyDialog,
+};
 
-const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+// const {Adw, Gio, Gtk, GObject, Gdk, GdkPixbuf} = imports.gi;
+
+import Adw from 'gi://Adw';
+import Gtk from 'gi://Gtk';
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import Gdk from 'gi://Gdk';
+import GdkPixbuf from 'gi://GdkPixbuf';
+
+// import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+// import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+// const ExtensionUtils = imports.misc.extensionUtils;
+// const Me = ExtensionUtils.getCurrentExtension();
+//
+// const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+
 
 var SpinButtonRow = GObject.registerClass(
 class SpinButtonRow extends Adw.ActionRow {
@@ -116,7 +133,7 @@ class PositionRow extends Adw.ActionRow {
     _init(title, settings, position, offset, subtitle = '') {
         super._init({title, subtitle});
 
-        const glist = Gtk.DropDown.new_from_strings([_('Left'), _('Center'), _('Right')]);
+        const glist = Gtk.DropDown.new_from_strings(['Left', 'Center', 'Right']);
         glist.valign = Gtk.Align.CENTER;
         settings.bind(
             position,
@@ -153,13 +170,13 @@ class FileChooserButton extends Gtk.Button {
     }
 
     _onClick() {
-        this.dialog = new Gtk.FileChooserDialog({title: _('Select File')});
+        this.dialog = new Gtk.FileChooserDialog({title: 'Select File'});
         this.dialog.set_transient_for(this.get_root());
         const header = this.dialog.get_header_bar();
         header.show_title_buttons = false;
 
-        const selectBtn = new Gtk.Button({label: _('Select')});
-        const cancelBtn = new Gtk.Button({label: _('Cancel')});
+        const selectBtn = new Gtk.Button({label: 'Select'});
+        const cancelBtn = new Gtk.Button({label: 'Cancel'});
         selectBtn.get_style_context().add_class('suggested-action');
 
         selectBtn.connect('clicked', () => this._onSelect());
@@ -191,7 +208,7 @@ class HotkeyDialog extends Gtk.Window {
 
         super._init({
             modal: true,
-            title: _('Set Custom Hotkey'),
+            title: 'Set Custom Hotkey',
             transient_for: parent.get_root(),
         });
         const vbox = new Gtk.Box({
@@ -216,7 +233,7 @@ class HotkeyDialog extends Gtk.Window {
 
         const modFrame = new Adw.PreferencesGroup();
         const modRow = new Adw.ActionRow({
-            title: _('Choose Modifiers'),
+            title: 'Choose Modifiers',
         });
 
         const buttonBox = new Gtk.Box({
@@ -226,19 +243,19 @@ class HotkeyDialog extends Gtk.Window {
         });
         modRow.add_suffix(buttonBox);
         const ctrlButton = new Gtk.ToggleButton({
-            label: _('Ctrl'),
+            label: 'Ctrl',
             valign: Gtk.Align.CENTER,
         });
         const superButton = new Gtk.ToggleButton({
-            label: _('Super'),
+            label: 'Super',
             valign: Gtk.Align.CENTER,
         });
         const shiftButton = new Gtk.ToggleButton({
-            label: _('Shift'),
+            label: 'Shift',
             valign: Gtk.Align.CENTER,
         });
         const altButton = new Gtk.ToggleButton({
-            label: _('Shift'),
+            label: 'Shift',
             valign: Gtk.Align.CENTER,
         });
         ctrlButton.connect('toggled', () => {
@@ -306,7 +323,7 @@ class HotkeyDialog extends Gtk.Window {
 
         const keyFrame = new Adw.PreferencesGroup();
         const keyLabel = new Gtk.Label({
-            label: _('Press any key'),
+            label: 'Press any key',
             use_markup: true,
             xalign: .5,
             hexpand: true,
@@ -323,7 +340,7 @@ class HotkeyDialog extends Gtk.Window {
         vbox.append(keyboardImage);
 
         const resultsRow = new Adw.ActionRow({
-            title: _('New Hotkey'),
+            title: 'New Hotkey',
         });
         const resultsWidget = new Gtk.ShortcutsShortcut({
             hexpand: true,
@@ -333,7 +350,7 @@ class HotkeyDialog extends Gtk.Window {
         keyFrame.add(resultsRow);
 
         const applyButton = new Gtk.Button({
-            label: _('Apply'),
+            label: 'Apply',
             halign: Gtk.Align.END,
             css_classes: ['suggested-action'],
         });

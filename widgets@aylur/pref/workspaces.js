@@ -1,14 +1,23 @@
 // https://gitlab.gnome.org/GNOME/gnome-shell-extensions/-/tree/main/extensions/workspace-indicator
 /* exported wsNamesGroup */
-const {Adw, Gio, GLib, GObject, Gtk, Pango} = imports.gi;
 
-const ExtensionUtils = imports.misc.extensionUtils;
+export { wsNamesGroup };
+
+// const {Adw, Gio, GLib, GObject, Gtk, Pango} = imports.gi;
+
+import Adw from 'gi://Adw';
+import Gtk from 'gi://Gtk';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Pango from 'gi://Pango';
 
 const WORKSPACE_SCHEMA = 'org.gnome.desktop.wm.preferences';
 const WORKSPACE_KEY = 'workspace-names';
 
-const Me = ExtensionUtils.getCurrentExtension();
-const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+// const ExtensionUtils = imports.misc.extensionUtils;
+// const Me = ExtensionUtils.getCurrentExtension();
+// const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
 
 class NewItem extends GObject.Object {}
 GObject.registerClass(NewItem);
@@ -125,7 +134,7 @@ var wsNamesGroup = class WorkspaceSettingsWidget extends Adw.PreferencesGroup {
 
     constructor() {
         super({
-            title: _('Workspace Names'),
+            title: 'Workspace Names',
         });
 
         this._workspaces = new WorkspacesList();

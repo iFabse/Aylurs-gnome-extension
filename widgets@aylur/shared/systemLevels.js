@@ -1,19 +1,28 @@
 /* exported LevelsBox */
+export {LevelsBox};
 
-const {St, Gio, Clutter, GObject, UPowerGlib: UPower} = imports.gi;
-const Main = imports.ui.main;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Mainloop = imports.mainloop;
-const {LevelBar} = Me.imports.shared.levelBar;
+import St from 'gi://St';
+import Gio from 'gi://Gio';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import UPower from 'gi://UPowerGlib';
+import GTop from 'gi://GTop';
 
-const {loadInterfaceXML} = imports.misc.fileUtils;
-const ByteArray = imports.byteArray;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
-let GTop, hasGTop = true;
+import { LevelBar } from './levelBar.js';
+
+import {loadInterfaceXML} from 'resource:///org/gnome/shell/misc/fileUtils.js';
+
+const Me = () => {
+    return Extension.lookupByUUID("widgets@markocic");
+};
+
+let hasGTop = true;
 try {
-    GTop = imports.gi.GTop;
 } catch (e) {
     global.log(e);
     hasGTop = false;
@@ -220,7 +229,7 @@ class CpuLevel extends UsageLevel {
 
             while (([line, _length] = dataInputStream.read_line(null)) && line !== null) {
                 if (line instanceof Uint8Array)
-                    line = ByteArray.toString(line).trim();
+                    line = new TextDecoder().decode(line).trim();
                 else
                     line = line.toString().trim();
 
@@ -287,7 +296,7 @@ class RamLevel extends UsageLevel {
 
             while (([line, _length] = dataInputStream.read_line(null)) && line !== null) {
                 if (line instanceof Uint8Array)
-                    line = ByteArray.toString(line).trim();
+                    line = new TextDecoder().decode(line).trim();
                 else
                     line = line.toString().trim();
 
@@ -328,7 +337,7 @@ class TempLevel extends UsageLevel {
 
         this.icon.icon_name = 'temperature-symbolic';
         this.icon.fallback_gicon = Gio.Icon.new_for_string(
-            `${Me.path}/media/temperature-symbolic.svg`
+            `${Me().metadata.path}/media/temperature-symbolic.svg`
         );
         this.hoverLabel.text = _('Temperature');
         this.colorSwitchValues = [50, 65, 80];
@@ -445,12 +454,12 @@ class LevelsBox extends St.BoxLayout {
     }
 
     startTimeout() {
-        this.timeout = Mainloop.timeout_add_seconds(1.0, this.updateLevels.bind(this));
+        this.timeout = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1.0, this.updateLevels.bind(this));
     }
 
     stopTimeout() {
         if (this.timeout) {
-            Mainloop.source_remove(this.timeout);
+            GLib.source_remove(this.timeout);
             this.timeout = null;
         }
     }

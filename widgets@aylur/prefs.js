@@ -1,16 +1,20 @@
 /* exported init fillPreferencesWindow */
+'use strict';
 
-const {Adw, Gtk, Gio, GObject, GdkPixbuf} = imports.gi;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Pages = Me.imports.pref.pages;
-const {SwitchRow} = Me.imports.pref.widgets;
+import Adw from 'gi://Adw';
+import Gtk from 'gi://Gtk';
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import GdkPixbuf from 'gi://GdkPixbuf';
 
-const _ = imports.gettext.domain(Me.metadata.uuid).gettext;
+import * as Pages from './pref/pages.js';
+import * as SwitchRow from './pref/widgets.js';
 
-function init() {
-    ExtensionUtils.initTranslations(Me.metadata.uuid);
-}
+import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+
+const Me = () => {
+    return ExtensionPreferences.lookupByUUID("widgets@markocic");
+};
 
 const ToggleRow = GObject.registerClass(
 class ToggleRow extends Adw.ActionRow {
@@ -54,7 +58,7 @@ class AboutPage extends Adw.PreferencesPage {
 
         const versionGroup = new Adw.PreferencesGroup();
         const versionRow = new Adw.ActionRow({title: _('Version:')});
-        versionRow.add_suffix(new Gtk.Label({valign: Gtk.Align.CENTER, label: `${Me.metadata.version}`}));
+        versionRow.add_suffix(new Gtk.Label({valign: Gtk.Align.CENTER, label: `${Me().metadata.version}`}));
         versionGroup.add(versionRow);
         this.add(versionGroup);
 
@@ -71,14 +75,14 @@ class AboutPage extends Adw.PreferencesPage {
         const donateRow = new Adw.ActionRow();
         donateGroup.add(donateRow);
 
-        let pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(`${Me.path}/media/prefs/kofi.png`, -1, 50, true);
+        let pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(`${Me().metadata.path}/media/prefs/kofi.png`, -1, 50, true);
         let donateImage = Gtk.Picture.new_for_pixbuf(pixbuf);
         donateRow.add_prefix(new Gtk.LinkButton({
             child: donateImage,
             uri: 'https://ko-fi.com/aylur',
         }));
 
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(`${Me.path}/media/prefs/gnome-logo.png`, -1, 50, true);
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(`${Me().metadata.path}/media/prefs/gnome-logo.png`, -1, 50, true);
         donateImage = Gtk.Picture.new_for_pixbuf(pixbuf);
         donateRow.add_suffix(new Gtk.Label({
             label: _('Also consider donating to'),
@@ -107,28 +111,37 @@ class MainPage extends Adw.PreferencesPage {
             icon_name: 'application-x-addon-symbolic',
         });
 
-        const settings = ExtensionUtils.getSettings();
+        const settings = Me().getSettings();
         const group = new Adw.PreferencesGroup();
         this.add(group);
 
+        // TODO try to fix QuickSettings and Hide Window Headerbars in the future
         group.add(new ToggleRow(new Pages.BackgroundClockPage(settings), 'background-clock'));
         group.add(new ToggleRow(new Pages.BatteryBarPage(settings), 'battery-bar'));
         group.add(new ToggleRow(new Pages.DashBoardPage(settings), 'dash-board'));
         group.add(new ToggleRow(new Pages.DateMenuTweakPage(settings), 'date-menu-tweaks'));
         group.add(new ToggleRow(new Pages.DynamicPanelPage(settings), 'dynamic-panel'));
-        group.add(new SwitchRow(_('Hide Window Headerbars'), settings, 'window-headerbar'));
+        // group.add(new SwitchRow.SwitchRow((_('Hide Window Headerbars'), settings, 'window-headerbar')));
         group.add(new ToggleRow(new Pages.NotificationIndicatorPage(settings), 'notification-indicator'));
         group.add(new ToggleRow(new Pages.MediaPlayerPage(settings), 'media-player'));
         group.add(new ToggleRow(new Pages.PowerMenuPage(settings), 'power-menu'));
         group.add(new ToggleRow(new Pages.StylishOSDPage(settings), 'stylish-osd'));
-        group.add(new ToggleRow(new Pages.QuickSettingsTweaksPage(settings), 'quick-settings-tweaks'));
+        // group.add(new ToggleRow(new Pages.QuickSettingsTweaksPage(settings), 'quick-settings-tweaks'));
         group.add(new ToggleRow(new Pages.WorkspaceIndicatorPage(settings), 'workspace-indicator'));
     }
 });
 
-function fillPreferencesWindow(window) {
-    window.add(new MainPage());
-    window.add(new AboutPage());
-    window.search_enabled = true;
-    window.can_navigate_back = true;
+export default class MyExtensionPreferences extends ExtensionPreferences  {
+    fillPreferencesWindow(window) {
+        window._settings = this.getSettings();
+        window.add(new MainPage());
+        window.add(new AboutPage());
+        window.search_enabled = true;
+        window.can_navigate_back = true;
+    }
 }
+
+function init() {
+    return new MyExtensionPreferences();
+}
+

@@ -205,44 +205,20 @@ class BatteryBar extends PanelMenu.Button {
 
 export var MyExtension = class MyExtension {
     constructor(settings) {
-        this._extension = new PanelButton({
-            settings,
-            name: 'battery-bar',
-            indicator: BatteryBar,
-            signals: [
-                'battery-bar-position',
-                'battery-bar-offset',
-            ],
-        });
-        this._stockIndicator = Main.panel.statusArea.quickSettings._system;
+        this._settings = settings;
+        this._batteryBar = null;
     }
 
     enable() {
-        this._extension.enable();
-        if (Main.panel.statusArea.quickSettings._system)
-            this._modifySystemItem();
-        else
-            this._queueModifySystemItem();
+        this._batteryBar = new BatteryBar(this._settings);
+        Main.panel.addToStatusArea('battery-bar', this._batteryBar);
     }
 
     disable() {
-        this._extension.disable();
-        this._stockIndicator.show();
-    }
-
-    _modifySystemItem() {
-        this._stockIndicator = Main.panel.statusArea.quickSettings._system;
-        this._stockIndicator.hide();
-    }
-
-    _queueModifySystemItem() {
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            if (!Main.panel.statusArea.quickSettings._system)
-                return GLib.SOURCE_CONTINUE;
-
-            this._modifySystemItem();
-            return GLib.SOURCE_REMOVE;
-        });
+        if (this._batteryBar !== null) {
+            this._batteryBar.destroy();
+            this._batteryBar = null;
+        }
     }
 };
 
